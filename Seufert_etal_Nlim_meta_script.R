@@ -5,6 +5,8 @@
 # Contact (R-code): gustaf.granath@gmail.com
 ################################################################################
 
+# Load packages
+
 # Statistical analyses
 library(metafor) # tested with version 2.0-0
 
@@ -15,6 +17,10 @@ library(grid)
 library(readxl)
 library(reshape2)
 
+# Code overview
+# First run section 'Load functions and data' to import data and load functions. This 
+# section ends with 'END LOAD DATA AND FUNCTIONS'
+# After this, all other sections can be run.
 
 # Load functions and data ####
 
@@ -207,6 +213,8 @@ levels(factor(unlist(stud)))
 # Number of studies
 stud <- lapply(rep.var, FUN = function (x) x$studyNr )
 factor(unlist(stud))
+# END LOAD DATA AND FUNCTIONS
+
 
 # Test differences between area and mass for Chl, Rub, sugar, leaf area ####
 # Mostly area based but a few mass based experiments.
