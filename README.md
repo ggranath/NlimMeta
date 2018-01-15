@@ -1,9 +1,9 @@
-## Crop response patterns of N allocation and photosynthesis to N limitation: A meta-analysis
+## Nitrogen and crop photosynthesis: A meta-analysis of crop response patterns to nitrogen limitation for improved model representation
 
 Data and R code to reproduce results in the (to be) submitted manuscript:
 
 **Verena Seufert, Gustaf Granath, Christoph Müller**
-**_Nitrogen and crop photosynthesis: A meta-analysis of crop response patterns to N limitation for global terrestrial ecosystem modelling_**
+**_ Nitrogen and crop photosynthesis: A meta-analysis of crop response patterns to nitrogen limitation for improved model representation_**
 
 Seufert_etal_Nlim_meta_script.R (R code) and the uploaded csv file (data file) reproduce the results.
 

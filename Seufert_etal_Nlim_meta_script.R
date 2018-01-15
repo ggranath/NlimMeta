@@ -1,5 +1,7 @@
 ################################################################################
-# Meta-analysis: effects of N limitation on crop photosynthesis and N allocation
+# Nitrogen and crop photosynthesis: A meta-analysis of crop response patterns 
+# to nitrogen limitation for improved model representation
+#
 # R code to reproduce results in Seufert V, Granath G, Muller C.
 #
 # Contact (R-code): gustaf.granath@gmail.com
