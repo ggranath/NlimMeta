@@ -419,7 +419,7 @@ plot(fitted.rma(mod.reml), predict(mod.Nlim))
 
 ### END MCMCglmm testing
 
-# Figure 3 in ms - Overview: full N lim. ####
+# Figure 2 in ms - Overview: full N lim. ####
 
 # list of data frames. 'rep.var' already loaded in the begining.
 # rep.var <- list(photosynthesis=dat.photo, leaf_area=dat.leafA, leafN_area = dat.leafNA, 
@@ -456,7 +456,7 @@ res$response <- rownames(res)
 res$response <- factor(res$response, levels = rev(res$response))
 
 # plot
-fig3 <- ggplot(res, aes(y=Effect, x=response)) +
+fig2 <- ggplot(res, aes(y=Effect, x=response)) +
   geom_errorbar(lwd=0.7, width=0, aes(ymin=lo, ymax=up)) +
   geom_point(shape=21, size=3, fill="white") +
   geom_hline(yintercept=0, lty=2, lwd=1, colour="grey50") +
@@ -481,25 +481,25 @@ fig3 <- ggplot(res, aes(y=Effect, x=response)) +
                             "chlorophyll", expression(N[L]*" per unit mass"),
                             expression(N[L]*" per unit area"), "leaf area", "photosynthesis")) +
   coord_flip()
-fig3
-ggsave("fig3_ms.png", fig3, width = 25, height = 10, units = "cm", dpi = 300)
+fig2
+ggsave("fig2_ms.png", fig3, width = 25, height = 10, units = "cm", dpi = 300)
 
-# Figure 4 in ms - Overview: N lim trends.####
+# Figure 3 in ms - Overview: N lim trends.####
 
 # list of data frames
 #rep.var <- list(photosynthesis=dat.photo, leaf_area=dat.leafA, leafN_area = dat.leafNA, 
 #           leafN_mass = dat.leafNM, leafChl = dat.chl, leafRubisco = dat.rub)
 
 # Select variables for figure4 and add response names as a new column
-fig4.vars <- names(rep.var)[names(rep.var) %in% c("photosynthesis", "leaf_area", "leafN_area", "leafN_mass", "leafChl", 
+fig3.vars <- names(rep.var)[names(rep.var) %in% c("photosynthesis", "leaf_area", "leafN_area", "leafN_mass", "leafChl", 
                                                   "leafRubisco" ,  "leafStarch"
 )] 
-rep.var.fig4 <- rep.var[fig4.vars]
-rep.names <- as.list(setNames(fig4.vars, fig4.vars))
-rep.var.fig4 <- Map(cbind, rep.var.fig4, response = rep.names)
+rep.var.fig3 <- rep.var[fig3.vars]
+rep.names <- as.list(setNames(fig3.vars, fig3.vars))
+rep.var.fig3 <- Map(cbind, rep.var.fig3, response = rep.names)
 
 # run model for all responses and save output of the effect  
-res <- lapply(rep.var.fig4, function (x) {
+res <- lapply(rep.var.fig3, function (x) {
   x$N_conc_exp2.rev <- 1-x$N_conc_exp2
   # var-covar matrix
   V <- v_func(dat = x, ind.study = "ind.study", 
@@ -526,18 +526,18 @@ res <- lapply(rep.var.fig4, function (x) {
 })
 
 # plot overall N lim effect
-fig4.list <- list(1)
+fig3.list <- list(1)
 resp.ynames <- list("Change in photosynthesis (%)", "Change in leaf area (%)", expression("Change in "*N[L]*" per unit area (%)"),
                     expression("Change in "*N[L]*" per unit mass (%)"), expression("Change in chlorophyll per unit area (%)"),  
                     expression("Change in Rubisco per unit area (%)"), expression("Change in leaf starch (%)"))
 fig.pan <- list("(a)","(b)","(c)","(d)","(e)","(f)", "(g)")
-for ( i in 1:length(rep.var.fig4)) {
+for ( i in 1:length(rep.var.fig3)) {
   # store the data frames for the response
-  nlim.plot <- data.frame("Neffect" = (exp(rep.var.fig4[[i]]$rr)-1)*100,
-                          "PropNlim" =  (1-rep.var.fig4[[i]]$N_conc_exp2) * 100)
+  nlim.plot <- data.frame("Neffect" = (exp(rep.var.fig3[[i]]$rr)-1)*100,
+                          "PropNlim" =  (1-rep.var.fig3[[i]]$N_conc_exp2) * 100)
   pred.frame <- res[[i]] # model predictions
   if(i < 7) {
-    fig4af <- ggplot(data=nlim.plot, aes(y=Neffect, x=PropNlim))+
+    fig3af <- ggplot(data=nlim.plot, aes(y=Neffect, x=PropNlim))+
       geom_point(shape=21, size=3, fill="white") +
       geom_hline(yintercept = 0, lty=2) +
       geom_line(data=pred.frame, aes(y=pred, x=X.N_conc_exp2.rev*100)) +
@@ -565,10 +565,10 @@ for ( i in 1:length(rep.var.fig4)) {
         ymin = 55,      # Vertical position of the textGrob
         #  ymax = 5,
         xmin = -90)
-    fig4.list[[i]] <- ggplot_gtable(ggplot_build(fig4af))
-    fig4.list[[i]]$layout$clip[fig4.list[[i]]$layout$name == "panel"] <- "off"
+    fig3.list[[i]] <- ggplot_gtable(ggplot_build(fig3af))
+    fig3.list[[i]]$layout$clip[fig3.list[[i]]$layout$name == "panel"] <- "off"
   } else {
-    fig4g <- ggplot(data=nlim.plot, aes(y=Neffect, x=PropNlim))+
+    fig3g <- ggplot(data=nlim.plot, aes(y=Neffect, x=PropNlim))+
       geom_point(shape=21, size=3, fill="white") +
       geom_hline(yintercept = 0, lty=2) +
       geom_line(data=pred.frame, aes(y=pred, x=X.N_conc_exp2.rev*100)) +
@@ -596,17 +596,17 @@ for ( i in 1:length(rep.var.fig4)) {
         ymin = 320,      # Vertical position of the textGrob
         #  ymax = 5,
         xmin = -90)
-    fig4.list[[i]] <- ggplot_gtable(ggplot_build(fig4g))
-    fig4.list[[i]]$layout$clip[fig4.list[[i]]$layout$name == "panel"] <- "off"
+    fig3.list[[i]] <- ggplot_gtable(ggplot_build(fig3g))
+    fig3.list[[i]]$layout$clip[fig3.list[[i]]$layout$name == "panel"] <- "off"
   }
 }
 
-png("figure4a_f.png", width=28, height=45, units="cm", res=300)
-grid.arrange(fig4.list[[1]],fig4.list[[2]], fig4.list[[3]], fig4.list[[4]], 
-             fig4.list[[5]], fig4.list[[6]], fig4.list[[7]], ncol=2, nrow =4)
+png("figure3a_g.png", width=28, height=45, units="cm", res=300)
+grid.arrange(fig3.list[[1]],fig3.list[[2]], fig3.list[[3]], fig3.list[[4]], 
+             fig3.list[[5]], fig3.list[[6]], fig3.list[[7]], ncol=2, nrow =4)
 dev.off()
 
-# Figure 5 in ms - Legume/CO2 modify N lim effect####
+# Figure 4 in ms - Legume/CO2 modify N lim effect####
 # rep.var <- list(photosynthesis=dat.photo, leaf_area=dat.leafA, leafN_area = dat.leafNA, 
 #                 leafN_mass = dat.leafNM, leafChl = dat.chl, leafRubisco = dat.rub, 
 #                 sla = dat.sla, leafStarch = dat.star, leafSugar = dat.sug)
@@ -657,7 +657,7 @@ res$treat <- factor(rep(c("not legum", "legume with nods", "legume, no nods"), 8
 res$response <- factor(res$response, levels = rev(res$response)) # get same order as legend
 
 # plot
-fig5a <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
+fig4a <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
   geom_errorbar(lwd=0.7, width=0, aes(ymin=lo, ymax=up),position = position_dodge(width = 0.5)) +
   geom_point(aes(shape=treat),size = 3, position = position_dodge(width = 0.5)) +
   geom_hline(yintercept=0, lty=2, lwd=1, colour="grey50") +
@@ -696,7 +696,7 @@ fig5a <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
   geom_text(aes(y=200,label=n.lev),hjust=0.3, vjust=rep(c(-0.2, 0.1, 0.4),8), position = position_dodge(width = 0.5), size=5) +
   geom_text(aes(y=-100, x=8.4, label= "(a)"), size = 12) +
   coord_flip()
-fig5a
+fig4a
 
 # CO2 treat
 
@@ -741,7 +741,7 @@ res$treat <- factor(rep(c("ambient", "elevated"), 9),
 res$response <- factor(res$response, levels = rev(res$response)) # get same order as legend
 
 # plot
-fig5b <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
+fig4b <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
   geom_errorbar(lwd=0.7, width=0, aes(ymin=lo, ymax=up),position = position_dodge(width = 0.5)) +
   geom_point(aes(shape=treat),size = 3, position = position_dodge(width = 0.5)) +
   geom_hline(yintercept=0, lty=2, lwd=1, colour="grey50") +
@@ -779,14 +779,15 @@ fig5b <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
   geom_text(aes(y=200,label=n.lev),hjust=0.3, vjust=rep(c(-0.1, 0.4),9), position = position_dodge(width = 0.5), size=5) +
   geom_text(aes(y=-100, x=9.3, label= "(b)"), size = 12) +
   coord_flip()
-fig5b
+fig4b
 
-png("figure5ab.png", width=26, height=32, units="cm", res=300)
-grid.arrange(fig5a, fig5b, ncol=1, nrow =2)
+png("figure4ab.png", width=26, height=32, units="cm", res=300)
+grid.arrange(fig4a, fig4b, ncol=1, nrow =2)
 dev.off()
 
+# Figure 5 in ms - correlations ####
 
-# Figure 6 in ms - photoVSleaf y NleafVSleaf ####
+# Figure a-b - photoVSleaf y NleafVSleaf #
 # First get photo and leaf data for figure (a)
 leaf.sub <- rep.var["leaf_area"]$leaf_area[,c("author_species_exp", "rr", "var.rr", "var.control")]
 #leaf.sub <-dat.leafA[,c("author_species_exp", "rr", "var.rr", "var.control")]
@@ -800,99 +801,99 @@ comb.dat.b <- merge(rep.var["leafN_area"]$leafN_area, leaf.sub, by="author_speci
 #comb.dat.a <- merge(dat.photo, leaf.sub, by="author_species_exp")
 comb.dat.b <- droplevels(comb.dat.b)
 
-# plot figure 6
+# plot figure a-b
 p.col.a <- col.df[col.df$col.species %in% comb.dat.a$species,1] 
-fig6a <- ggplot(comb.dat.a, aes(x=rr.leaf, y=rr, group = species)) +
-            geom_point(aes(shape=leg, color = species), size=4) +
-            geom_abline(slope=1) +
-            geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
-            geom_hline(yintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
-            xlim(c(-3.0, 0.5)) +
-            ylim(c(-3.0, 0.5)) +
-            ylab(expression(paste("Change in photosynthesis (log"[e],italic(rr), ")"))) +
-            xlab(expression(paste("Change in leaf area (log"[e],italic(rr), ")"))) +
-            scale_color_manual(name = "Species", values = p.col.a, 
+fig5a <- ggplot(comb.dat.a, aes(x=rr.leaf, y=rr, group = species)) +
+  geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE) +
+  geom_abline(slope=1) +
+  geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
+  geom_hline(yintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
+  xlim(c(-3.0, 0.5)) +
+  ylim(c(-3.0, 0.5)) +
+  ylab(expression(paste("Change in photosynthesis (log"[e],italic(rr), ")"))) +
+  xlab(expression(paste("Change in leaf area (log"[e],italic(rr), ")"))) +
+  scale_color_manual(name = "Species", values = p.col.a, 
                      labels = c(expression(italic("G. hirsutum")), 
                                 expression(italic("G. max")),
                                 expression(italic("O. sativa")), 
                                 expression(italic("S. bicolor")), 
                                 expression(italic("T. aestivum")), 
                                 expression(italic("Z. mays")) )) +
-            scale_shape_discrete(name = "Legume status",
+  scale_shape_discrete(name = "Legume status",
                        breaks=c("no","yes, non nod","yes, nod"),
                        labels = c("not legume", "legume, no nods", "legume with nods")) +
-            theme(
-              axis.text.x  = element_text(size=14, color="black", margin=unit(c(0.5,0.5,0.5,0.5), "cm")),
-              axis.text.y  = element_text(size=14, color="black", margin=unit(c(0.5,0.5,0.5,0.5), "cm")),
-              axis.title.x = element_text(size=14, vjust=5),
-              axis.title.y = element_text(size=14, vjust=-5),
-              axis.line.x = element_line(color="black", size = 1),
-              axis.line.y = element_line(color="black", size = 1),
-              axis.line = element_line(colour = "black"),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_rect(colour = "black", fill=NA, size=1),
-              panel.background = element_blank(),
-              legend.text.align = 0,
-              legend.text = element_text(size=14),
-              legend.title = element_text(size=14),
-              axis.ticks.length=unit(-0.20, "cm")  ) +
-              annotation_custom(
-                grob = textGrob(label = "(a)", gp = gpar(fontsize = 23)),
-                ymin = 0.3,      # Vertical position of the textGrob
-                #  ymax = 5,
-                xmin = -6.5)
+  theme(
+    axis.text.x  = element_text(size=14, color="black", margin=unit(c(0.5,0.5,0.5,0.5), "cm")),
+    axis.text.y  = element_text(size=14, color="black", margin=unit(c(0.5,0.5,0.5,0.5), "cm")),
+    axis.title.x = element_text(size=14, vjust=5),
+    axis.title.y = element_text(size=14, vjust=-5),
+    axis.line.x = element_line(color="black", size = 1),
+    axis.line.y = element_line(color="black", size = 1),
+    axis.line = element_line(colour = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1),
+    panel.background = element_blank(),
+    legend.text.align = 0,
+    legend.text = element_text(size=14),
+    legend.title = element_text(size=14),
+    axis.ticks.length=unit(-0.20, "cm")  ) +
+  annotation_custom(
+    grob = textGrob(label = "(a)", gp = gpar(fontsize = 23)),
+    ymin = 0.3,      # Vertical position of the textGrob
+    #  ymax = 5,
+    xmin = -6.5)
 
 
 p.col.b <- col.df[col.df$col.species %in% comb.dat.b$species,1] 
-fig6b <- ggplot(comb.dat.b, aes(x=rr.leaf, y=rr, group = species)) +
-                      geom_point(aes(shape=leg, color = species), size=4) +
-                      geom_abline(slope=1) +
-                      geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
-                      geom_hline(yintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
-                      xlim(c(-3.0, 0.5)) +
-                      ylim(c(-3.0, 0.5)) +
-                      ylab(expression(paste("Change in ",N[L]," per unit area (log"[e],italic(rr), ")"))) +
-                      xlab(expression(paste("Change in leaf area (log"[e],italic(rr), ")"))) +
-                      scale_color_manual(name = "Species", values = p.col.b, 
-                                         labels = c(expression(italic("G. hirsutum")), 
-                                                    expression(italic("G. max")),
-                                                    expression(italic("H. vulgare")),                                                     
-                                                    expression(italic("O. sativa")), 
-                                                    expression(italic("T. aestivum")))) +
-                      scale_shape_discrete(name = "Legume status",
-                          breaks=c("no","yes, non nod","yes, nod"),
-                          labels = c("not legume", "legume, no nods", "legume with nods")) +
-                      theme(
-                        axis.text.x  = element_text(size=14, color="black", margin=unit(c(0.5,0.5,0.5,0.5), "cm")),
-                        axis.text.y  = element_text(size=14, color="black", margin=unit(c(0.5,0.5,0.5,0.5), "cm")),
-                        axis.title.x = element_text(size=14, vjust=5),
-                        axis.title.y = element_text(size=14, vjust=-5),
-                        axis.line.x = element_line(color="black", size = 1),
-                        axis.line.y = element_line(color="black", size = 1),
-                        axis.line = element_line(colour = "black"),
-                        panel.grid.major = element_blank(),
-                        panel.grid.minor = element_blank(),
-                        panel.border = element_rect(colour = "black", fill=NA, size=1),
-                        panel.background = element_blank(),
-                        legend.text.align = 0,
-                        legend.text = element_text(size=14),
-                        legend.title = element_text(size=14),
-                        axis.ticks.length=unit(-0.20, "cm")  ) +
-                        guides(color = guide_legend(order=2),
-                               shape = guide_legend(order=1)) +
-                        annotation_custom(
-                          grob = textGrob(label = "(b)", gp = gpar(fontsize = 23)),
-                          ymin = 0.3,      # Vertical position of the textGrob
-                          #  ymax = 5,
-                          xmin = -6.5)
-              
-png("figure6ab.png", width=18, height=24, units="cm", res=300)
-grid.arrange(fig6a,fig6b, ncol=1, nrow =2)
-dev.off()
+fig5b <- ggplot(comb.dat.b, aes(x=rr.leaf, y=rr, group = species)) +
+  geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE) +
+  geom_abline(slope=1) +
+  geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
+  geom_hline(yintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
+  xlim(c(-3.0, 0.5)) +
+  ylim(c(-3.0, 0.5)) +
+  ylab(expression(paste("Change in ",N[L]," per unit area (log"[e],italic(rr), ")"))) +
+  xlab(expression(paste("Change in leaf area (log"[e],italic(rr), ")"))) +
+  scale_color_manual(name = "Species", values = p.col.b, 
+                     labels = c(expression(italic("G. hirsutum")), 
+                                expression(italic("G. max")),
+                                expression(italic("H. vulgare")),                                                     
+                                expression(italic("O. sativa")), 
+                                expression(italic("T. aestivum")))) +
+  scale_shape_discrete(name = "Legume status",
+                       breaks=c("no","yes, non nod","yes, nod"),
+                       labels = c("not legume", "legume, no nods", "legume with nods")) +
+  theme(
+    axis.text.x  = element_text(size=14, color="black", margin=unit(c(0.5,0.5,0.5,0.5), "cm")),
+    axis.text.y  = element_text(size=14, color="black", margin=unit(c(0.5,0.5,0.5,0.5), "cm")),
+    axis.title.x = element_text(size=14, vjust=5),
+    axis.title.y = element_text(size=14, vjust=-5),
+    axis.line.x = element_line(color="black", size = 1),
+    axis.line.y = element_line(color="black", size = 1),
+    axis.line = element_line(colour = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1),
+    panel.background = element_blank(),
+    legend.text.align = 0,
+    legend.text = element_text(size=14),
+    legend.title = element_text(size=14),
+    axis.ticks.length=unit(-0.20, "cm")  ) +
+  guides(color = guide_legend(order=2),
+         shape = guide_legend(order=1)) +
+  annotation_custom(
+    grob = textGrob(label = "(b)", gp = gpar(fontsize = 23)),
+    ymin = 0.3,      # Vertical position of the textGrob
+    #  ymax = 5,
+    xmin = -6.5)
 
-# Figure 7 in ms - photoVSleafNarea y photoVSleafNmass ####
-# First get photo and leaf N area  data for figure (a)
+# png("figure6ab.png", width=18, height=24, units="cm", res=300)
+# grid.arrange(fig5a,fig5b, ncol=1, nrow =2)
+# dev.off()
+
+# Figure  c-d - photoVSleafNarea y photoVSleafNmass #
+# First get photo and leaf N area  data for figure (c)
 leaf.sub <- rep.var["leafN_area"]$leafN_area[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat.a <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
@@ -906,8 +907,8 @@ comb.dat.b <- droplevels(comb.dat.b)
 
 # plot figure 7
 p.col.a <- col.df[col.df$col.species %in% comb.dat.a$species,1] 
-fig7a <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
-  geom_point(aes(shape=leg, color = species), size=4) +
+fig5c <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
+  geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
   geom_hline(yintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -946,15 +947,15 @@ fig7a <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
   guides(color = guide_legend(order=2),
          shape = guide_legend(order=1)) +
   annotation_custom(
-    grob = textGrob(label = "(a)", gp = gpar(fontsize = 23)),
+    grob = textGrob(label = "(c)", gp = gpar(fontsize = 23)),
     ymin = 0.3,      # Vertical position of the textGrob
     #  ymax = 5,
     xmin = -4)
-   
+
 
 p.col.b <- col.df[col.df$col.species %in% comb.dat.b$species,1] 
-fig7b <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
-  geom_point(aes(shape=leg, color = species), size=4) +
+fig5d <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
+  geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
   geom_hline(yintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -991,39 +992,39 @@ fig7b <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
   guides(color = guide_legend(order=2),
          shape = guide_legend(order=1)) +
   annotation_custom(
-    grob = textGrob(label = "(b)", gp = gpar(fontsize = 23)),
+    grob = textGrob(label = "(d)", gp = gpar(fontsize = 23)),
     ymin = 0.3,      # Vertical position of the textGrob
     #  ymax = 5,
     xmin = -4)
 
-png("figure7ab.png", width=36, height=13, units="cm", res=300)
-grid.arrange(fig7a,fig7b, ncol=2, nrow =1)
-dev.off()
+#png("figure5cd.png", width=36, height=13, units="cm", res=300)
+#grid.arrange(fig5c,fig5d, ncol=2, nrow =1)
+#dev.off()
 
 
-# Figure 8 in ms - photo, Chl, Rubisco ####
-# First get leaf N area  and photo data for figure (a)
+# Figure e-f-g - photo, Chl, Rubisco #
+# First get leaf N area  and photo data for figure (e)
 leaf.sub <- rep.var["leafChl"]$leafChl[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat.a <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
 comb.dat.a <- droplevels(comb.dat.a)
 
-# Second get leafRubisco and photo for figure (b)
+# Second get leafRubisco and photo for figure (f)
 leaf.sub <- rep.var["leafRubisco"]$leafRubisco[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat.b <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
 comb.dat.b <- droplevels(comb.dat.b)
 
-# Second get Chl and Rubisco for figure (b)
+# Third get Chl and Rubisco for figure (g)
 leaf.sub <- rep.var["leafRubisco"]$leafRubisco[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat.c <- merge(rep.var["leafChl"]$leafChl, leaf.sub, by="author_species_exp")
 comb.dat.c <- droplevels(comb.dat.c)
 
-# plot figure 8
+# plot figure e-f-g
 p.col.a <- col.df[col.df$col.species %in% comb.dat.a$species,1] 
-fig8a <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
-  geom_point(aes(shape=leg, color = species), size=4) +
+fig5f <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
+  geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
   geom_hline(yintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -1060,15 +1061,15 @@ fig8a <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
   guides(color = guide_legend(order=2),
          shape = guide_legend(order=1)) +
   annotation_custom(
-    grob = textGrob(label = "(a)", gp = gpar(fontsize = 23)),
+    grob = textGrob(label = "(f)", gp = gpar(fontsize = 23)),
     ymin = 0.3,      # Vertical position of the textGrob
     #  ymax = 5,
     xmin = -5.5)
 
 
 p.col.b <- col.df[col.df$col.species %in% comb.dat.b$species,1] 
-fig8b <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
-  geom_point(aes(shape=leg, color = species), size=4) +
+fig5e <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
+  geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
   geom_hline(yintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -1102,14 +1103,14 @@ fig8b <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
   guides(color = guide_legend(order=2),
          shape = guide_legend(order=1)) +
   annotation_custom(
-    grob = textGrob(label = "(b)", gp = gpar(fontsize = 23)),
+    grob = textGrob(label = "(e)", gp = gpar(fontsize = 23)),
     ymin = 0.3,      # Vertical position of the textGrob
     #  ymax = 5,
     xmin = -5.5)
 
 p.col.c <- col.df[col.df$col.species %in% comb.dat.c$species,1] 
-fig8c <- ggplot(comb.dat.c, aes(x=rr.leafN, y=rr, group = species)) +
-  geom_point(aes(shape=leg, color = species), size=4) +
+fig5g <- ggplot(comb.dat.c, aes(x=rr.leafN, y=rr, group = species)) +
+  geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
   geom_hline(yintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -1143,15 +1144,56 @@ fig8c <- ggplot(comb.dat.c, aes(x=rr.leafN, y=rr, group = species)) +
   guides(color = guide_legend(order=2),
          shape = guide_legend(order=1)) +
   annotation_custom(
-    grob = textGrob(label = "(c)", gp = gpar(fontsize = 23)),
+    grob = textGrob(label = "(g)", gp = gpar(fontsize = 23)),
     ymin = 0.3,      # Vertical position of the textGrob
     #  ymax = 5,
     xmin = -5.5)
+#png("figure5efg.png", width=18, height=39, units="cm", res=300)
+#grid.arrange(fig5e, fig5f, fig5g, ncol=1, nrow =3)
+#dev.off()
 
-png("figure8abc.png", width=18, height=39, units="cm", res=300)
-grid.arrange(fig8a, fig8b, fig8c, ncol=1, nrow =3)
+# legend panel
+p.col <- col.df$cols
+dat.leg <- data.frame(species = col.df$col.species, leg=c(rep(levels(comb.dat.c$leg),3), "no"), y=rnorm(10,10), x=rnorm(10,10))
+fig5leg <- ggplot(dat.leg, aes(x=x, y=y, group = species)) +
+  geom_point(aes(shape=leg, color = species), size=4) +
+  ylim(c(-3.0, -0.5)) +
+  xlim(c(-2.5, -0.5)) +
+  scale_color_manual(name = "Species", values = p.col, 
+                     labels = c(expression(italic("B. napus")),
+                                expression(italic("G. hirsutum")), 
+                                expression(italic("G. max")),
+                                expression(italic("H. vulgare")),
+                                expression(italic("M. esculenta")),
+                                expression(italic("O. sativa")),
+                                expression(italic("P. vulgaris")),
+                                expression(italic("S. bicolor")),
+                                expression(italic("T. aestivum")),
+                                expression(italic("Z. mays")) )) +
+  scale_shape_discrete(name = "Legume status",
+                       breaks=c("no","yes, non nod","yes, nod"),
+                       labels = c("not legume", "legume, no nods", "legume with nods")) +
+  theme(axis.ticks =  element_blank(),
+    legend.position = c(0.5, 0.5),
+    legend.box = "horizontal",
+    axis.text  = element_blank(),
+    axis.title = element_blank(),
+    axis.line = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    legend.text.align = 0,
+    legend.text = element_text(size=16),
+    legend.title = element_text(size=16)) +
+  guides(color = guide_legend(order=2),
+         shape = guide_legend(order=1))
+#fig5leg
+
+# put together figure 5
+png("figure5a_g.png", width=23, height=41, units="cm", res=300)
+grid.arrange(fig5a, fig5b, fig5c, fig5d, fig5e, fig5f, fig5g, fig5leg, ncol=2, nrow =4)
 dev.off()
-
 
 
 # photo vs leaf area ####
