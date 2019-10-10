@@ -1,33 +1,35 @@
-################################################################################
-# A meta-analysis of crop response patterns to nitrogen limitation 
-# for improved model representation 
-#
-# R code to reproduce results in Seufert V, Granath G, Muller C. PLOS ONE
-#
-# Contact (R-code): gustaf.granath@gmail.com
-################################################################################
+########################################################################################
+# A meta-analysis of crop response patterns to nitrogen limitation                     #
+# for improved model representation                                                    #
+#                                                                                      #
+# R code to reproduce results in Seufert V, Granath G, Muller C. 2019. PLOS ONE        #
+#                                                                                      #
+# Contact (R-code): gustaf.granath@gmail.com                                           #
+########################################################################################
 
-# Tested with
-# R version 3.5.3
+# Tested on
+# R version 3.6.1
 # Platform: x86_64-pc-linux-gnu (64-bit)
 # Ubuntu 16.04.6 LTS
 
 # Load packages
 
 # Statistical analyses
-library(metafor) # version 2.0-0
+library(metafor) # version 2.1-0
 
 # Plotting and data management
-library(ggplot2) # 2_3.2.0 
+library(ggplot2) # 2_3.2.1 
 library(gridExtra) # 2.3 
 library(grid) 
 library(readxl) # 1.3.0 
 library(reshape2) # 2_1.4.3 
 
-# Code overview
-# First run section 'Load functions and data' to import data and load functions. This 
-# section ends with 'END LOAD DATA AND FUNCTIONS'
-# After this, all other sections can be run.
+########################################################################################
+# Code overview                                                                        # 
+# First run section 'Load functions and data' to import data and load functions. This  #
+# section ends with 'END LOAD DATA AND FUNCTIONS'                                      #
+# After this, all other sections can be run.                                           #
+########################################################################################
 
 # Load functions and data ####
 
@@ -208,16 +210,19 @@ gg_color_hue <- function(n) {
   hcl(h = hues, l = 65, c = 100)[1:n]
 }
 
-# for fig 2
+# for fig 3
 col.species = levels(factor(c(as.character(rep.var[["photosynthesis"]]$species), 
                               as.character(rep.var[["leaf_area"]]$species))))
 cols = gg_color_hue(length(col.species)) # eleven species for photosynthesis + leaf area
-col.fig2.df <- data.frame(cols, col.species, stringsAsFactors = FALSE)
-# Figure 4 has one species less. We remove it to match colors between figures.
-col.fig4.df <- col.fig2.df[-which(col.fig2.df$col.species == "S. tuberosum"),]
+col.fig3.df <- data.frame(cols, col.species, stringsAsFactors = FALSE)
+# Figure 5 has one species less. We remove it to match colors between figures.
+col.fig5.df <- col.fig3.df[-which(col.fig3.df$col.species == "S. tuberosum"),]
 
-# END FUNCTIONS AND LOADING DATA
+###############################################################################
+# END OF FUNCTIONS AND LOADING DATA                                              #
+###############################################################################
 
+# General stats
 # Number of species
 stud <- lapply(rep.var, FUN = function (x) x$species )
 levels(factor(unlist(stud)))
@@ -304,6 +309,7 @@ summary(mod.full)
 # Test experiment setup factors and other predictors ####
 # Complete test of all predictors defined in the object test.var
 # Produces the file large_table.csv
+# see supp mtrl for text on these analyses
 
 test.var <- c("N_conc_exp2", "N_conc_exp2_quad", "CO2", # Treatment effects 
   "lengthlim","frequencyN", "Nsource", "pHcontr",  "facility", "medium", "potsize", # Possible experimental setup effects
@@ -490,7 +496,7 @@ fig2 <- ggplot(res, aes(y=Effect, x=response)) +
                             expression(N[L]*" per unit area"), "leaf area", "photosynthesis")) +
   coord_flip()
 fig2
-ggsave("fig1_ms.png", fig2, width = 25, height = 10, units = "cm", dpi = 300)
+ggsave("figure2_ms.png", fig2, width = 25, height = 10, units = "cm", dpi = 300)
 #ggsave("figure2.eps", fig2, width = 25, height = 10, units = "cm")
 
 # make funnel plots of all response
@@ -529,15 +535,15 @@ for (i in 1:length(res.f)) {
 #           leafN_mass = dat.leafNM, leafChl = dat.chl, leafRubisco = dat.rub)
 
 # Select variables for figure4 and add response names as a new column
-fig2.vars <- names(rep.var)[names(rep.var) %in% c("photosynthesis", "leaf_area", "leafN_area", "leafN_mass", "leafChl", 
+fig3.vars <- names(rep.var)[names(rep.var) %in% c("photosynthesis", "leaf_area", "leafN_area", "leafN_mass", "leafChl", 
                                                   "leafRubisco" ,  "leafStarch"
 )] 
-rep.var.fig2 <- rep.var[fig2.vars]
-rep.names <- as.list(setNames(fig2.vars, fig2.vars))
-rep.var.fig2 <- Map(cbind, rep.var.fig2, response = rep.names)
+rep.var.fig3 <- rep.var[fig3.vars]
+rep.names <- as.list(setNames(fig3.vars, fig3.vars))
+rep.var.fig3 <- Map(cbind, rep.var.fig3, response = rep.names)
 
 # run model for all responses and save output of the effect  
-res <- lapply(rep.var.fig2, function (x) {
+res <- lapply(rep.var.fig3, function (x) {
   x$N_conc_exp2.rev <- 1-x$N_conc_exp2
   # var-covar matrix
   V <- v_func(dat = x, ind.study = "ind.study", 
@@ -558,29 +564,29 @@ res <- lapply(rep.var.fig2, function (x) {
   pred.frame <-  predict(mod, newmods = c(seq(min(1-x$N_conc_exp2),1,0.001)), 
                          addx=TRUE)}
   
-  pred.frame <- do.call(cbind.data.frame, pred.frame)
+  pred.frame <- do.call(cbind.data.frame, list(pred.frame))
   pred.frame$pred <- (exp(pred.frame$pred)-1)*100
   return(pred.frame)
 })
 
 # plot overall N lim effect
-fig2.list <- list(1)
+fig3.list <- list(1)
 resp.ynames <- list("Change in photosynthesis (%)", "Change in leaf area (%)", expression("Change in "*N[L]*" per unit area (%)"),
                     expression("Change in "*N[L]*" per unit mass (%)"), expression("Change in chlorophyll per unit area (%)"),  
                     expression("Change in Rubisco per unit area (%)"), expression("Change in leaf starch (%)"))
 fig.pan <- list("A","B","C","D","E","F", "G")
 p.col.all <- character()
-for ( i in 1:length(rep.var.fig2)) {
+for ( i in 1:length(rep.var.fig3)) {
   # store the data frames for the response
-  nlim.plot <- data.frame("Neffect" = (exp(rep.var.fig2[[i]]$rr)-1)*100,
-                          "PropNlim" =  (1-rep.var.fig2[[i]]$N_conc_exp2) * 100,
-                          "species" = rep.var.fig2[[i]]$species,
-                          "leg" = rep.var.fig2[[i]]$leg)
-  p.col <- col.fig2.df[col.fig2.df$col.species %in% nlim.plot$species,1] 
+  nlim.plot <- data.frame("Neffect" = (exp(rep.var.fig3[[i]]$rr)-1)*100,
+                          "PropNlim" =  (1-rep.var.fig3[[i]]$N_conc_exp2) * 100,
+                          "species" = rep.var.fig3[[i]]$species,
+                          "leg" = rep.var.fig3[[i]]$leg)
+  p.col <- col.fig3.df[col.fig3.df$col.species %in% nlim.plot$species,1] 
   print(i)
   pred.frame <- res[[i]] # model predictions
   if(i < 7) {
-    fig2af <- ggplot(data=nlim.plot, aes(y=Neffect, x=PropNlim, group=species))+
+    fig3af <- ggplot(data=nlim.plot, aes(y=Neffect, x=PropNlim, group=species))+
       geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE,stroke=1) +
       geom_hline(yintercept = 0, lty=2) +
       geom_line(data=pred.frame, aes(y=pred, x=X.N_conc_exp2.rev*100, color=NULL, group=NULL), show.legend = FALSE) +
@@ -612,10 +618,10 @@ for ( i in 1:length(rep.var.fig2)) {
         ymin = 51,      # Vertical position of the textGrob
         #  ymax = 5,
         xmin = -90)
-    fig2.list[[i]] <- ggplot_gtable(ggplot_build(fig2af))
-    fig2.list[[i]]$layout$clip[fig2.list[[i]]$layout$name == "panel"] <- "off"
+    fig3.list[[i]] <- ggplot_gtable(ggplot_build(fig3af))
+    fig3.list[[i]]$layout$clip[fig3.list[[i]]$layout$name == "panel"] <- "off"
   } else {
-    fig2g <- ggplot(data=nlim.plot, aes(y=Neffect, x=PropNlim, group=species))+
+    fig3g <- ggplot(data=nlim.plot, aes(y=Neffect, x=PropNlim, group=species))+
       geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE,stroke=1) +
       geom_hline(yintercept = 0, lty=2) +
       geom_line(data=pred.frame, aes(y=pred, x=X.N_conc_exp2.rev*100, color=NULL, group=NULL), show.legend = FALSE) +
@@ -647,17 +653,16 @@ for ( i in 1:length(rep.var.fig2)) {
         ymin = 310,      # Vertical position of the textGrob
         #  ymax = 5,
         xmin = -90)
-    fig2.list[[i]] <- ggplot_gtable(ggplot_build(fig2g))
-    fig2.list[[i]]$layout$clip[fig2.list[[i]]$layout$name == "panel"] <- "off"
+    fig3.list[[i]] <- ggplot_gtable(ggplot_build(fig3g))
+    fig3.list[[i]]$layout$clip[fig3.list[[i]]$layout$name == "panel"] <- "off"
   }
   p.col.all <- c(p.col.all,unique(p.col))
 }
 
 # make legend
-#p.col <- unique(p.col.all)
-p.col <- col.fig2.df$cols
-names(p.col) <- col.fig2.df$col.species 
-dat.leg <- data.frame(species = col.fig2.df$col.species, leg=c(rep(levels(rep.var[["photosynthesis"]]$leg),3), "no","no"), 
+p.col <- col.fig3.df$cols
+names(p.col) <- col.fig3.df$col.species 
+dat.leg <- data.frame(species = col.fig3.df$col.species, leg=c(rep(levels(rep.var[["photosynthesis"]]$leg),3), "no","no"), 
                       y=rnorm(11,11), x=rnorm(11,11))
 fig.leg <- ggplot(dat.leg, aes(x=x, y=y, group = species)) +
   geom_point(aes(shape=leg, color = species), size=4, stroke=1.5) +
@@ -693,19 +698,20 @@ fig.leg <- ggplot(dat.leg, aes(x=x, y=y, group = species)) +
         legend.title = element_text(size=16)) +
   guides(color = guide_legend(order=2,override.aes = list(shape = 21)),
          shape = guide_legend(order=1))
-#fig.leg
 
+# save fig
 png("figure3a_g_col.png", width=28, height=45, units="cm", res=300)
-grid.arrange(fig2.list[[1]],fig2.list[[2]], fig2.list[[3]], fig2.list[[4]], 
-             fig2.list[[5]], fig2.list[[6]], fig2.list[[7]], fig.leg,ncol=2, nrow =4)
+grid.arrange(fig3.list[[1]],fig3.list[[2]], fig3.list[[3]], fig3.list[[4]], 
+             fig3.list[[5]], fig3.list[[6]], fig3.list[[7]], fig.leg,ncol=2, nrow =4)
 dev.off()
 
 #cairo_ps("figure3a_g_col.eps", width=11, height=17.7)
-#grid.arrange(fig2.list[[1]],fig2.list[[2]], fig2.list[[3]], fig2.list[[4]], 
-#             fig2.list[[5]], fig2.list[[6]], fig2.list[[7]], fig.leg,ncol=2, nrow =4)
+#grid.arrange(fig3.list[[1]],fig3.list[[2]], fig3.list[[3]], fig3.list[[4]], 
+#             fig3.list[[5]], fig3.list[[6]], fig3.list[[7]], fig.leg,ncol=2, nrow =4)
 #dev.off()
 
 # Figure 4 in ms - Legume/CO2 modify N lim effect####
+
 # rep.var <- list(photosynthesis=dat.photo, leaf_area=dat.leafA, leafN_area = dat.leafNA, 
 #                 leafN_mass = dat.leafNM, leafChl = dat.chl, leafRubisco = dat.rub, 
 #                 sla = dat.sla, leafStarch = dat.star, leafSugar = dat.sug)
@@ -756,7 +762,7 @@ res$treat <- factor(rep(c("not legum", "legume with nods", "legume, no nods"), 8
 res$response <- factor(res$response, levels = rev(unique(res$response))) # get same order as legend
 
 # plot
-fig3a <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
+fig4a <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
   geom_errorbar(lwd=0.7, width=0, aes(ymin=lo, ymax=up),position = position_dodge(width = 0.5)) +
   geom_point(aes(shape=treat),size = 3, position = position_dodge(width = 0.5)) +
   geom_hline(yintercept=0, lty=2, lwd=1, colour="grey50") +
@@ -792,10 +798,10 @@ fig3a <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
                             "chlorophyll", expression(N[L]*" per unit mass"),
                             expression(N[L]*" per unit area"), "leaf area", "photosynthesis")) +
   #geom_text(aes(y=200,label=n.lev),hjust=0, vjust=0.35, position = position_dodge(width = 0.5), size=5) +
-  geom_text(aes(y=200,label=n.lev),hjust=0.3, vjust=rep(c(-0.2, 0.1, 0.4),8), position = position_dodge(width = 0.5), size=5) +
+  #geom_text(aes(y=200,label=n.lev),hjust=0.3, vjust=rep(c(-0.2, 0.1, 0.4),8), position = position_dodge(width = 0.5), size=5) +
   geom_text(aes(y=-100, x=8.1, label= "A"), size = 12) +
   coord_flip()
-fig3a
+fig4a
 
 # CO2 treat
 
@@ -824,7 +830,7 @@ res <- lapply(rep.var.sub, function (x) {
     pred.df <- predict(mod.p, newmods = pred.other) # make predictions
     n.lev <- c(sum(mod.p$X[,1]) - sum(mod.p$X[,3]), sum(mod.p$X[,3])) # sample size per level 
   }
-  pred.frame <- do.call(cbind.data.frame, pred.df)
+  pred.frame <- do.call(cbind.data.frame, list(pred.df))
   pred <- (exp(pred.frame[,c(1,3:4)])-1)*100
   
   # % change under complete N limitation and slope of N lim effect
@@ -840,7 +846,7 @@ res$treat <- factor(rep(c("ambient", "elevated"), 9),
 res$response <- factor(res$response, levels = rev(unique(res$response))) # get same order as legend
 
 # plot
-fig3b <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
+fig4b <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
   geom_errorbar(lwd=0.7, width=0, aes(ymin=lo, ymax=up),position = position_dodge(width = 0.5)) +
   geom_point(aes(shape=treat),size = 3, position = position_dodge(width = 0.5)) +
   geom_hline(yintercept=0, lty=2, lwd=1, colour="grey50") +
@@ -878,14 +884,14 @@ fig3b <- ggplot(res, aes(y=Effect, x=response,group=treat)) +
   geom_text(aes(y=200,label=n.lev),hjust=0.3, vjust=rep(c(-0.1, 0.4),9), position = position_dodge(width = 0.5), size=5) +
   geom_text(aes(y=-100, x=9.0, label= "B"), size = 12) +
   coord_flip()
-fig3b
+fig4b
 
 png("figure4ab.png", width=26, height=32, units="cm", res=300)
-grid.arrange(fig3a, fig3b, ncol=1, nrow =2)
+grid.arrange(fig4a, fig4b, ncol=1, nrow =2)
 dev.off()
 
 cairo_ps("figure4ab.eps", width=10.2, height=12.6)
-grid.arrange(fig3a, fig3b, ncol=1, nrow =2)
+grid.arrange(fig4a, fig4b, ncol=1, nrow =2)
 dev.off()
 
 # Figure 5 in ms - correlations ####
@@ -899,17 +905,18 @@ leaf.sub <- rep.var["leaf_area"]$leaf_area[,c("author_species_exp", "rr", "var.r
 colnames(leaf.sub) <- c("author_species_exp", "rr.leaf", "var.rr.leaf", "var.control.leaf")
 comb.dat.a <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp", 
                     suffixes = c("",".y"))
+comb.dat.a <- comb.dat.a[,-46]
 #comb.dat.a <- merge(dat.photo, leaf.sub, by="author_species_exp")
 comb.dat.a <- droplevels(comb.dat.a)
-
 # Second get N leaf per area and leaf data for figure (b)
 comb.dat.b <- merge(rep.var["leafN_area"]$leafN_area, leaf.sub, by="author_species_exp")
+comb.dat.b <- comb.dat.b[,-46]
 #comb.dat.a <- merge(dat.photo, leaf.sub, by="author_species_exp")
 comb.dat.b <- droplevels(comb.dat.b)
 
 # plot figure a-b
-p.col.a <- col.fig4.df[col.fig4.df$col.species %in% comb.dat.a$species,1] 
-fig4a <- ggplot(comb.dat.a, aes(x=rr.leaf, y=rr, group = species)) +
+p.col.a <- col.fig5.df[col.fig5.df$col.species %in% comb.dat.a$species,1] 
+fig5a <- ggplot(comb.dat.a, aes(x=rr.leaf, y=rr, group = species)) +
   geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE,stroke=1) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -951,8 +958,8 @@ fig4a <- ggplot(comb.dat.a, aes(x=rr.leaf, y=rr, group = species)) +
     xmin = -6.5)
 
 
-p.col.b <- col.fig4.df[col.fig4.df$col.species %in% comb.dat.b$species,1] 
-fig4b <- ggplot(comb.dat.b, aes(x=rr.leaf, y=rr, group = species)) +
+p.col.b <- col.fig5.df[col.fig5.df$col.species %in% comb.dat.b$species,1] 
+fig5b <- ggplot(comb.dat.b, aes(x=rr.leaf, y=rr, group = species)) +
   geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE,stroke=1) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -999,16 +1006,18 @@ fig4b <- ggplot(comb.dat.b, aes(x=rr.leaf, y=rr, group = species)) +
 leaf.sub <- rep.var["leafN_area"]$leafN_area[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat.a <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
+comb.dat.a <- comb.dat.a[,-46]
 comb.dat.a <- droplevels(comb.dat.a)
 
 # Second get N leaf per area and leaf data for figure (b)
 leaf.sub <- rep.var["leafN_mass"]$leafN_mass[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat.b <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
+comb.dat.b <- comb.dat.b[,-46]
 comb.dat.b <- droplevels(comb.dat.b)
 
-p.col.a <- col.fig4.df[col.fig4.df$col.species %in% comb.dat.a$species,1] 
-fig4c <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
+p.col.a <- col.fig5.df[col.fig5.df$col.species %in% comb.dat.a$species,1] 
+fig5c <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
   geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE,stroke=1) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -1054,8 +1063,8 @@ fig4c <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
     xmin = -4)
 
 
-p.col.b <- col.fig4.df[col.fig4.df$col.species %in% comb.dat.b$species,1] 
-fig4d <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
+p.col.b <- col.fig5.df[col.fig5.df$col.species %in% comb.dat.b$species,1] 
+fig5d <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
   geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE,stroke=1) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -1104,23 +1113,26 @@ fig4d <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
 leaf.sub <- rep.var["leafChl"]$leafChl[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat.a <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
+comb.dat.a <- comb.dat.a[,-46]
 comb.dat.a <- droplevels(comb.dat.a)
 
 # Second get leafRubisco and photo for figure (f)
 leaf.sub <- rep.var["leafRubisco"]$leafRubisco[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat.b <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
+comb.dat.b <- comb.dat.b[,-46]
 comb.dat.b <- droplevels(comb.dat.b)
 
 # Third get Chl and Rubisco for figure (g)
 leaf.sub <- rep.var["leafRubisco"]$leafRubisco[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat.c <- merge(rep.var["leafChl"]$leafChl, leaf.sub, by="author_species_exp")
+comb.dat.c <- comb.dat.c[,-44]
 comb.dat.c <- droplevels(comb.dat.c)
 
 # plot figure e-f-g
-p.col.a <- col.fig4.df[col.fig4.df$col.species %in% comb.dat.a$species,1] 
-fig4f <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
+p.col.a <- col.fig5.df[col.fig5.df$col.species %in% comb.dat.a$species,1] 
+fig5f <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
   geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE,stroke=1) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -1164,8 +1176,8 @@ fig4f <- ggplot(comb.dat.a, aes(x=rr.leafN, y=rr, group = species)) +
     xmin = -5.5)
 
 
-p.col.b <- col.fig4.df[col.fig4.df$col.species %in% comb.dat.b$species,1] 
-fig4e <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
+p.col.b <- col.fig5.df[col.fig5.df$col.species %in% comb.dat.b$species,1] 
+fig5e <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
   geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE,stroke=1) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -1205,8 +1217,8 @@ fig4e <- ggplot(comb.dat.b, aes(x=rr.leafN, y=rr, group = species)) +
     #  ymax = 5,
     xmin = -5.5)
 
-p.col.c <- col.fig4.df[col.fig4.df$col.species %in% comb.dat.c$species,1] 
-fig4g <- ggplot(comb.dat.c, aes(x=rr.leafN, y=rr, group = species)) +
+p.col.c <- col.fig5.df[col.fig5.df$col.species %in% comb.dat.c$species,1] 
+fig5g <- ggplot(comb.dat.c, aes(x=rr.leafN, y=rr, group = species)) +
   geom_point(aes(shape=leg, color = species), size=4, show.legend = FALSE,stroke=1) +
   geom_abline(slope=1) +
   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5, color = "gray") +
@@ -1247,10 +1259,10 @@ fig4g <- ggplot(comb.dat.c, aes(x=rr.leafN, y=rr, group = species)) +
     xmin = -5.5)
 
 # legend panel
-p.col <- col.fig4.df$cols
-names(p.col) <- col.fig4.df$col.species 
+p.col <- col.fig5.df$cols
+names(p.col) <- col.fig5.df$col.species 
 #p.col <- unique(p.col.all)
-dat.leg <- data.frame(species = col.fig4.df$col.species, leg=c(rep(levels(rep.var[["photosynthesis"]]$leg),3), "no"), 
+dat.leg <- data.frame(species = col.fig5.df$col.species, leg=c(rep(levels(rep.var[["photosynthesis"]]$leg),3), "no"), 
                       y=rnorm(10,10), x=rnorm(10,10))
 fig.leg <- ggplot(dat.leg, aes(x=x, y=y, group = species)) +
   geom_point(aes(shape=leg, color = species), size=4, stroke=1.5) +
@@ -1286,17 +1298,17 @@ fig.leg <- ggplot(dat.leg, aes(x=x, y=y, group = species)) +
   guides(color = guide_legend(order=2,override.aes = list(shape = 21)),
          shape = guide_legend(order=1))
 #fig.leg
-# put together figure 4
-png("figure4a_g_open.png", width=23, height=41, units="cm", res=300)
-grid.arrange(fig4a, fig4b, fig4c, fig4d, fig4e, fig4f, fig4g, fig.leg, ncol=2, nrow =4)
+# put together figure 5
+png("figure5a_g_open.png", width=23, height=41, units="cm", res=300)
+grid.arrange(fig5a, fig5b, fig5c, fig5d, fig5e, fig5f, fig5g, fig.leg, ncol=2, nrow =4)
 dev.off()
 
-cairo_ps("figure5a_g_col.eps", width=9.1, height=16.1)
-grid.arrange(fig4a, fig4b, fig4c, fig4d, fig4e, fig4f, fig4g, fig.leg, ncol=2, nrow =4)
+cairo_ps("figure5a_g_col2.eps", width=9.1, height=16.1)
+grid.arrange(fig5a, fig5b, fig5c, fig5d, fig5e, fig5f, fig5g, fig.leg, ncol=2, nrow =4)
 dev.off()
 
-
-# photo vs leaf area ####
+# Correlation statistics####
+#__photo vs leaf area ####
 leaf.sub <- rep.var["leaf_area"]$leaf_area[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leaf", "var.rr.leaf", "var.control.leaf")
 comb.dat <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
@@ -1409,7 +1421,7 @@ plot(rr ~ rr.leaf, comb.dat)
 abline(a=0,b=1)
 points(rr ~ rr.leaf, comb.dat, col= as.numeric(comb.dat$species))
 
-# Leaf N area vs leaf area ####
+#__leaf N area vs leaf area ####
 # First get photo and leaf data for figure (a)
 leaf.sub <- rep.var["leaf_area"]$leaf_area[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leaf", "var.rr.leaf", "var.control.leaf")
@@ -1512,7 +1524,7 @@ summary(m2)
 plot(m2$Sol)
 
 
-# photo vs leaf N area ####
+#__photo vs leaf N area ####
 leaf.sub <- rep.var["leafN_area"]$leafN_area[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
@@ -1669,7 +1681,7 @@ plot(m2$Sol)
 
 # END PHOTO vs LEAF A
 
-# photo vs leaf N mass ####
+#__photo vs leaf N mass ####
 leaf.sub <- rep.var["leafN_mass"]$leafN_mass[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
@@ -1796,7 +1808,7 @@ summary(mod1)
 vcov(mod1, type = "obs")
 
 
-# photo vs leaf chl area ####
+#__photo vs leaf chl area ####
 leaf.sub <- rep.var["leafChl"]$leafChl[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
@@ -1926,7 +1938,7 @@ vcov(mod1, type = "obs")
 # End photo vs leaf chl area
 
 
-# photo vs starch ####
+#__photo vs starch ####
 leaf.sub <-dat.star[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat <- merge(dat.photo, leaf.sub, by="author_species_exp")
@@ -2031,7 +2043,7 @@ vcov(mod1, type = "obs")
 
 # End photo vs starch
 
-# photo vs rubisco ####
+#__photo vs rubisco ####
 leaf.sub <- rep.var["leafRubisco"]$leafRubisco[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat <- merge(rep.var["photosynthesis"]$photosynthesis, leaf.sub, by="author_species_exp")
@@ -2154,7 +2166,7 @@ vcov(mod1, type = "obs")
 
 # End photo vs rubisco
 
-# Chl leaf area vs leaf rubisco ####
+#__Chl leaf area vs leaf rubisco ####
 leaf.sub <- rep.var["leafRubisco"]$leafRubisco[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat <- merge(rep.var["leafChl"]$leafChl, leaf.sub, by="author_species_exp")
@@ -2279,7 +2291,7 @@ vcov(mod1, type = "obs")
 # End chl vs rubisco
 
 
-# Chl leaf area vs leaf starch ####
+#__Chl leaf area vs leaf starch ####
 leaf.sub <-dat.star[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat <- merge(dat.chl, leaf.sub, by="author_species_exp")
@@ -2386,7 +2398,7 @@ vcov(mod1, type = "obs")
 
 # End chl vs star
 
-# N leaf mass vs leaf rubisco ####
+#__N leaf mass vs leaf rubisco ####
 leaf.sub <-dat.rub[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat <- merge(dat.leafNM, leaf.sub, by="author_species_exp")
@@ -2418,7 +2430,7 @@ NMleafvsLrub.gt$layout$clip[NMleafvsLrub.gt$layout$name == "panel"] <- "off"
 grid.draw(NMleafvsLrub.gt)
 # end 
 
-# N leaf mass vs leaf chl ####
+#__N leaf mass vs leaf chl ####
 leaf.sub <-dat.chl[,c("author_species_exp", "rr", "var.rr", "var.control")]
 colnames(leaf.sub) <- c("author_species_exp", "rr.leafN", "var.rr.leafN", "var.control.leafN")
 comb.dat <- merge(dat.leafNM, leaf.sub, by="author_species_exp")
@@ -2488,7 +2500,7 @@ res <- lapply(rep.var.sub, function (x) {
     pred.df <- predict(mod.p, newmods = pred.other) # make predictions
     n.lev <- c(sum(mod.p$X[,1]) - sum(mod.p$X[,3:4]), sum(mod.p$X[,3]), sum(mod.p$X[,4])) # sample size per level 
   }
-  pred.frame <- do.call(cbind.data.frame, pred.df)
+  pred.frame <- do.call(cbind.data.frame, list(pred.df))
   pred <- (exp(pred.frame[,c(1,3:4)])-1)*100
 
     # % change under complete N limitation and slope of N lim effect
@@ -2502,7 +2514,7 @@ colnames(res)[1:3] <- c("Effect", "lo", "up")
 res$treat <- factor(c(rep(c("NH4+", "NO3-", "NH4+ - NO3-"), 3), c("NH4+", "NO3-", "NH4+ - NO3-", "urea"),
                       rep(c("NH4+", "NO3-", "NH4+ - NO3-"), 3)),
                     levels =  c("NH4+", "NO3-", "NH4+ - NO3-", "urea"))
-res$response <- factor(res$response, levels = rev(res$response)) # get same order as legend
+res$response <- factor(res$response, levels = rev(unique(res$response))) # get same order as legend
 
 # plot
 res$treat <- relevel(res$treat, ref = "urea") 
